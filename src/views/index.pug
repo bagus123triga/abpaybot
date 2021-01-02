@@ -1,0 +1,87 @@
+extends layouts
+block title
+	title Unofficial WhatsApp API
+
+block content
+	div(class='row justify-content-center')
+		div(class='col-md-8')
+			div(class='card mt-4')
+				div(class='card-body')
+					if session.alert
+						- const app_alert = session.alert;
+						div(class='alert alert-'+app_alert.type+' alert-dismissible fade show mb-3' role='alert')
+							span= app_alert.content
+							button(type='button' class='btn-close' data-bs-dismiss='alert')
+						- session.alert = null;
+					if data.session
+						form(method='POST' action='/api/send_message' autocomplete='off')
+							input(type='hidden' name='api_key' value=data.api_key)
+							div(class='mb-3')
+								label Nomer Tujuan
+								input(type='number' name='phone' class='form-control' placeholder='628xxx')
+							div(class='mb-3')
+								label Pesan
+								textarea(name='message' class='form-control' placeholder='\\r\\n For new line...')
+							div(class='mb-2 d-grid gap-1')
+								button(type='submit' class='btn btn-primary') Send Message
+					div(class='d-grid gap-2')
+						if !data.session
+							button(class='btn btn-primary' data-bs-toggle='modal' data-bs-target='#addWhatsappAccountModal') Add WhatsApp Account
+						a(href='/logout' class='btn btn-danger') Logout
+	
+	if !data.session
+		div(id='addWhatsappAccountModal' class='modal fade' tabindex='-1' aria-labelledby='addWhatsappAccountModalLabel' aria-hidden='true')
+			div(class='modal-dialog')
+				div(class='modal-content')
+					div(class='modal-header')
+						h5(class='modal-title' id='addWhatsappAccountModalLabel') Add WhatsApp Account
+						button(type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close')
+					div(class='modal-body')
+						center
+							span Please SCAN this QR!
+							br
+							img(id='qrCodeImage' src='' class='img-thumbnail' alt='')
+
+block script
+	if !data.session
+		script(src='https://js.pusher.com/7.0/pusher.min.js')
+		script.
+			document.addEventListener('DOMContentLoaded', function() {
+				Pusher.logToConsole = false;
+				const pusher = new Pusher('e818dc0dfef3478a4962', {
+					cluster: 'ap1'
+				});
+				
+				const channel = pusher.subscribe('#{data.api_key}');
+				channel.bind('add-whatsapp-account', function(response) {
+					if (response.status === true) {
+						if (response.data.type == 'qr') {
+							document.getElementById('qrCodeImage').src = response.data.source;
+						} else if (response.data.type == 'authenticated') {
+							document.getElementById('qrCodeImage').src = 'https://i.ibb.co/KmNxr4q/Png-Item-3024199.png';
+						} else if (response.data.type == 'ready') {
+							window.setTimeout(function() {
+								window.location.href = '/';
+							}, 3000);
+						}
+					}
+				});
+				
+				const addWhatsappAccountModal = document.getElementById('addWhatsappAccountModal');
+				addWhatsappAccountModal.addEventListener('shown.bs.modal', async function() {
+					if (document.getElementById('qrCodeImage').getAttribute('src') == '') {
+						document.getElementById('qrCodeImage').src = 'https://i.ibb.co/Jts13YJ/giphy.gif';
+						var url = '/add_whatsapp_account';
+						await fetch(url, {
+							method: 'POST',
+							credentials: 'include',
+							headers: {
+								'Content-Type': 'application/x-www-form-urlencoded'
+							},
+							body: '#{data.api_key}'
+						}).then(function(response) {
+							const data = response.json();
+						});
+					}
+				});
+			});

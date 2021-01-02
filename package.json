@@ -1,0 +1,28 @@
+{
+  "name": "abpaybot",
+  "version": "1.0.0",
+  "description": "WhatsApp Bot API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bagus Tri",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-dynamic-helpers-patch": "0.0.2",
+    "express-session": "^1.17.1",
+    "fs": "0.0.1-security",
+    "http": "0.0.1-security",
+    "mysql": "^2.18.1",
+    "path": "^0.12.7",
+    "pug": "^3.0.0",
+    "pusher": "^4.0.2",
+    "qrcode": "^1.4.4",
+    "whatsapp-web.js": "^1.11.2",
+    "xss": "^1.0.8"
+  }
+}
